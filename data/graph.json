@@ -1,0 +1,178 @@
+{
+  "_info": "Data graf rute Kos -> Gedung Fasilkom Unej. Bobot w dan heuristik h dalam meter. x,y = posisi di kanvas SVG.",
+  "config": {
+    "goal_default": "Gedung_Fasilkom",
+    "kos_nodes": [
+      "Kos_Jawa",
+      "Kos_Kalimantan",
+      "Kos_Mastrip"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "Kos_Jawa",
+      "label": "Kos Jawa",
+      "x": 85,
+      "y": 120,
+      "h": 1450,
+      "kind": "kos",
+      "pos": "above"
+    },
+    {
+      "id": "Kos_Kalimantan",
+      "label": "Kos Kalimantan",
+      "x": 95,
+      "y": 345,
+      "h": 1050,
+      "kind": "kos",
+      "pos": "below"
+    },
+    {
+      "id": "Kos_Mastrip",
+      "label": "Kos Mastrip",
+      "x": 110,
+      "y": 545,
+      "h": 1300,
+      "kind": "kos",
+      "pos": "below"
+    },
+    {
+      "id": "Simpang_Jawa",
+      "label": "Simpang Jawa",
+      "x": 225,
+      "y": 175,
+      "h": 1150,
+      "kind": "simpang",
+      "pos": "above"
+    },
+    {
+      "id": "Simpang_Kalimantan",
+      "label": "Simpang Kalimantan",
+      "x": 240,
+      "y": 330,
+      "h": 820,
+      "kind": "simpang",
+      "pos": "below"
+    },
+    {
+      "id": "Bundaran_DPRD",
+      "label": "Bundaran DPRD",
+      "x": 350,
+      "y": 470,
+      "h": 860,
+      "kind": "bundaran",
+      "pos": "below"
+    },
+    {
+      "id": "Gerbang_Utama",
+      "label": "Gerbang Utama",
+      "x": 500,
+      "y": 310,
+      "h": 520,
+      "kind": "gerbang",
+      "pos": "above"
+    },
+    {
+      "id": "Gerbang_Belakang",
+      "label": "Gerbang Belakang",
+      "x": 640,
+      "y": 480,
+      "h": 380,
+      "kind": "gerbang",
+      "pos": "below"
+    },
+    {
+      "id": "Simpang_Rektorat",
+      "label": "Simpang Rektorat",
+      "x": 690,
+      "y": 265,
+      "h": 240,
+      "kind": "simpang",
+      "pos": "above"
+    },
+    {
+      "id": "Gedung_Fasilkom",
+      "label": "Gedung Fasilkom",
+      "x": 860,
+      "y": 150,
+      "h": 0,
+      "kind": "goal",
+      "pos": "above"
+    }
+  ],
+  "edges": [
+    {
+      "a": "Kos_Jawa",
+      "b": "Simpang_Jawa",
+      "w": 300,
+      "desc": "Jalan lingkungan menuju jalan utama Jawa",
+      "lt": 0.4
+    },
+    {
+      "a": "Kos_Kalimantan",
+      "b": "Simpang_Kalimantan",
+      "w": 250,
+      "desc": "Gang kos menuju Jalan Kalimantan",
+      "lt": 0.46,
+      "side": -1
+    },
+    {
+      "a": "Kos_Mastrip",
+      "b": "Bundaran_DPRD",
+      "w": 450,
+      "desc": "Jalur lurus Jalan Mastrip menuju bundaran"
+    },
+    {
+      "a": "Simpang_Jawa",
+      "b": "Bundaran_DPRD",
+      "w": 500,
+      "desc": "Ruas jalan penghubung Jawa ke Bundaran",
+      "lt": 0.74,
+      "side": 1
+    },
+    {
+      "a": "Simpang_Jawa",
+      "b": "Simpang_Kalimantan",
+      "w": 400,
+      "desc": "Jalan tembus kawasan Jawa – Kalimantan"
+    },
+    {
+      "a": "Simpang_Kalimantan",
+      "b": "Gerbang_Utama",
+      "w": 350,
+      "desc": "Jalur utama Jalan Kalimantan menuju gerbang"
+    },
+    {
+      "a": "Bundaran_DPRD",
+      "b": "Gerbang_Utama",
+      "w": 600,
+      "desc": "Jalur memutar lewat bundaran ke gerbang utama"
+    },
+    {
+      "a": "Bundaran_DPRD",
+      "b": "Gerbang_Belakang",
+      "w": 550,
+      "desc": "Jalur alternatif menuju gerbang belakang",
+      "lt": 0.42,
+      "side": 1
+    },
+    {
+      "a": "Gerbang_Utama",
+      "b": "Simpang_Rektorat",
+      "w": 300,
+      "desc": "Jalan utama di dalam area kampus"
+    },
+    {
+      "a": "Simpang_Rektorat",
+      "b": "Gedung_Fasilkom",
+      "w": 250,
+      "desc": "Jalan area kampus menuju Fasilkom"
+    },
+    {
+      "a": "Gerbang_Belakang",
+      "b": "Gedung_Fasilkom",
+      "w": 400,
+      "desc": "Jalan tembus dari gerbang belakang ke Fasilkom"
+    }
+  ]
+}

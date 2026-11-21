@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A* vs BFS — Rute Terpendek Kos → Gedung Fasilkom Unej</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="eyebrow">Simulasi Pencarian Rute · Algoritma A* &amp; BFS</span>
+    <h1>Rute Terpendek dari Kos Menuju Gedung Fakultas Ilmu Komputer (Fasilkom)
+      <small>Kawasan Universitas Jember — graf berbobot 10 node &amp; 11 ruas jalan, bobot = jarak aktual g(n) dalam meter</small>
+    </h1>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ GRAF + KONTROL ============ -->
+  <section class="layout">
+
+    <div class="card graph-card">
+      <div class="card-head">
+        <div class="card-title">Peta Graf Jalan
+          <span id="graphSubtitle">Klik / hover node &amp; ruas jalan untuk melihat detail</span>
+        </div>
+        <div class="hint" id="stepIndicator">— belum dijalankan —</div>
+      </div>
+
+      <div class="graph-wrap" id="graphWrap">
+        <svg id="graph" viewBox="0 0 1000 640" role="img" aria-label="Graf jaringan jalan menuju Gedung Fasilkom">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M40 0H0V40" fill="none" stroke="#e8eef7" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect x="0" y="0" width="1000" height="640" fill="url(#grid)"/>
+          <rect x="440" y="92" width="524" height="486" rx="26" fill="rgba(79,70,229,.045)" stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="8 7"/>
+          <text x="702" y="558" class="area-label" text-anchor="middle">AREA DALAM KAMPUS UNEJ</text>
+          <g id="layerEdges"></g>
+          <g id="layerNodes"></g>
+        </svg>
+        <div class="tooltip" id="tooltip"></div>
+      </div>
+
+      <div class="legend">
+        <span class="l-kos"><i></i>Kos / titik awal</span>
+        <span class="l-goal"><i></i>Gedung Fasilkom (tujuan)</span>
+        <span class="l-cur"><i></i>Node sedang dikunjungi</span>
+        <span class="l-vis"><i></i>Sudah dievaluasi</span>
+        <span class="l-fr"><i></i>Ada di frontier / antrean</span>
+        <span class="l-path"><i></i>Rute akhir</span>
+      </div>
+    </div>
+
+    <aside class="side">
+      <!-- Kontrol -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">Kontrol Simulasi</div>
+
+        <div class="field">
+          <label for="startSel">Titik Awal (Kos)</label>
+          <select id="startSel"></select>
+        </div>
+
+        <div class="field">
+          <label for="goalSel">Titik Tujuan</label>
+          <select id="goalSel"></select>
+        </div>
+
+        <div class="field">
+          <label>Algoritma</label>
+          <div class="segmented" id="algoSeg">
+            <button data-algo="astar" class="active">A*</button>
+            <button data-algo="bfs">BFS</button>
+            <button data-algo="both">Bandingkan</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="speed">Kecepatan Animasi</label>
+          <div class="speed-row">
+            <input type="range" id="speed" min="1" max="5" step="1" value="3">
+            <span class="speed-val" id="speedVal">700 ms</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="action btn-run" id="btnRun">▶ Jalankan</button>
+          <button class="action btn-step" id="btnStep">⏭ Langkah</button>
+          <button class="action btn-reset" id="btnReset">↺ Reset Simulasi</button>
+        </div>
+      </div>
+
+      <!-- Live state -->
+      <div class="card">
+        <div class="live-head">
+          <div class="card-title" style="margin:0">Status Pencarian</div>
+          <span class="algo-badge" id="algoBadge">idle</span>
+        </div>
+
+        <div class="kv">
+          <div class="box"><div class="k" id="kG">g(n)</div><div class="v" id="kvG">–</div></div>
+          <div class="box"><div class="k" id="kH">h(n)</div><div class="v" id="kvH">–</div></div>
+          <div class="box hi"><div class="k" id="kF">f(n)</div><div class="v" id="kvF">–</div></div>
+        </div>
+        <div class="formula" id="formulaLine">f(n) = g(n) + h(n) — dihitung saat node diambil dari open list</div>
+
+        <div class="hint" id="openListTitle" style="margin-bottom:6px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:10.5px">Open List (prioritas f terkecil)</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Node</th><th style="text-align:right" id="th2">g</th><th style="text-align:right" id="th3">h</th><th style="text-align:right" id="th4">f</th></tr></thead>
+            <tbody id="openBody"><tr><td colspan="4" class="empty">Belum ada data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ============ HASIL PERBANDINGAN ============ -->
+  <section style="margin-top:18px">
+    <div class="card-head" style="padding:0 4px">
+      <div class="card-title">Panel Perbandingan &amp; Metrik Evaluasi</div>
+      <div class="hint">A* memakai bobot + heuristik · BFS menganggap semua ruas sama panjang</div>
+    </div>
+
+    <div class="results-grid">
+      <div class="res-card astar idle" id="resAstar">
+        <div class="res-title"><span class="dot"></span>A* (A-Star)<span class="tag" id="tagAstar">Menunggu</span></div>
+        <div class="res-route" id="routeAstar"><span class="hint">Rute belum dihitung.</span></div>
+        <div class="res-metrics">
+          <div class="metric"><div class="k">Total Jarak</div><div class="v" id="distAstar">– <small>m</small></div></div>
+          <div class="metric"><div class="k">Node Dievaluasi</div><div class="v" id="evalAstar">–</div></div>
+        </div>
+        <div class="res-order" id="orderAstar" style="display:none"></div>
+        <div class="show-hint">↳ Klik kartu ini untuk menampilkan rutenya di graf</div>
+        <div class="res-note">Rute optimal karena heuristik <b>admissible</b> (h(n) ≤ jarak terpendek sesungguhnya), sehingga A* tidak pernah melewatkan jalur terbaik.</div>
+      </div>
+
+      <div class="res-card bfs idle" id="resBfs">
+        <div class="res-title"><span class="dot"></span>BFS (Breadth-First Search)<span class="tag" id="tagBfs">Menunggu</span></div>
+        <div class="res-route" id="routeBfs"><span class="hint">Rute belum dihitung.</span></div>
+        <div class="res-metrics">
+          <div class="metric"><div class="k">Total Jarak</div><div class="v" id="distBfs">– <small>m</small></div></div>
+          <div class="metric"><div class="k">Node Dievaluasi</div><div class="v" id="evalBfs">–</div></div>
+        </div>
+        <div class="res-order" id="orderBfs" style="display:none"></div>
+        <div class="show-hint">↳ Klik kartu ini untuk menampilkan rutenya di graf</div>
+        <div class="res-note">BFS menjamin rute dengan <b>jumlah ruas paling sedikit</b> (hop minimum), bukan jarak meter terkecil — bobot g(n) tidak dipertimbangkan.</div>
+      </div>
+    </div>
+
+    <div class="summary idle" id="summary">
+      <div class="ico">💡</div>
+      <div>
+        <h4>Ringkasan Perbandingan</h4>
+        <p id="summaryText">Jalankan simulasi untuk melihat perbandingan jarak tempuh dan jumlah node yang dievaluasi antara A* dan BFS.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOG + TABEL REFERENSI ============ -->
+  <section class="layout-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Log Iterasi
+          <span id="logSubtitle">Rekam jejak langkah &amp; perhitungan f(n) = g(n) + h(n)</span>
+        </div>
+        <div class="hint" id="logCounter"></div>
+      </div>
+      <div class="log-box" id="logBox"><div class="ln log-empty">Belum ada langkah. Tekan <b>Jalankan</b> atau <b>Langkah</b>.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Referensi Heuristik h(n)
+          <span>Nilai estimasi garis lurus tiap node menuju Gedung Fasilkom</span>
+        </div>
+      </div>
+      <div class="ref-scroll">
+        <table class="ref-table">
+          <thead>
+            <tr><th>#</th><th>Node</th><th style="text-align:right">h(n) m</th><th style="text-align:right">Jarak terpendek</th><th>Admissible?</th></tr>
+          </thead>
+          <tbody id="heurBody"></tbody>
+        </table>
+      </div>
+      <div class="note">
+        Kolom <b>jarak terpendek</b> dihitung dengan Dijkstra sebagai acuan kebenaran. Karena
+        <span class="mono">h(n) ≤ d(n, tujuan)</span> untuk semua node, heuristik bersifat
+        <b>admissible</b> sehingga A* tetap menghasilkan rute optimal.
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:18px">
+    <div class="card-head">
+      <div class="card-title">Data Ruas Jalan (Edge)
+        <span>Bobot g(n) = jarak aktual dalam meter · graf tak berarah (dua arah)</span>
+      </div>
+      <div class="hint" id="edgeCount"></div>
+    </div>
+    <div class="ref-scroll" style="max-height:none">
+      <table class="ref-table">
+        <thead>
+          <tr><th>#</th><th>Ruas Jalan</th><th style="text-align:right">Bobot g(n)</th><th>Keterangan jalur</th></tr>
+        </thead>
+        <tbody id="edgeBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <b>Arsitektur:</b> algoritma A*, BFS &amp; Dijkstra berjalan di <b>backend Python (Flask)</b>;
+    data graf dibaca dari <span class="mono">data/graph.json</span>, lalu ditampilkan oleh HTML + CSS + JavaScript.<br>
+    <b>Alur demo:</b> pilih titik awal → pilih <kbd>Bandingkan</kbd> → <kbd>Jalankan</kbd>, atau gunakan <kbd>Langkah</kbd> untuk menjelaskan tiap iterasi secara manual.
+  </footer>
+</main>
+
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

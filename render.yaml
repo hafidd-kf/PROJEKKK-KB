@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: astar-bfs-fasilkom
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app
+    healthCheckPath: /healthz
