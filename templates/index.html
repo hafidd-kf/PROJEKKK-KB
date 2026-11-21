@@ -3,48 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A* vs BFS — Rute Terpendek Kos → Gedung Fasilkom Unej</title>
+<title>A* vs BFS — Rute Fasilkom Unej</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<header class="topbar">
-  <div class="topbar-inner">
-    <span class="eyebrow">Simulasi Pencarian Rute · Algoritma A* &amp; BFS</span>
-    <h1>Rute Terpendek dari Kos Menuju Gedung Fakultas Ilmu Komputer (Fasilkom)
-      <small>Kawasan Universitas Jember — graf berbobot 10 node &amp; 11 ruas jalan, bobot = jarak aktual g(n) dalam meter</small>
-    </h1>
-  </div>
+<header>
+  <span>SIMULASI PENCARIAN RUTE</span>
+  <h1>A* vs BFS <em>· Kos → Gedung Fasilkom Unej</em></h1>
 </header>
 
-<main class="wrap">
-
-  <!-- ============ GRAF + KONTROL ============ -->
-  <section class="layout">
-
-    <div class="card graph-card">
-      <div class="card-head">
-        <div class="card-title">Peta Graf Jalan
-          <span id="graphSubtitle">Klik / hover node &amp; ruas jalan untuk melihat detail</span>
-        </div>
-        <div class="hint" id="stepIndicator">— belum dijalankan —</div>
-      </div>
-
-      <div class="graph-wrap" id="graphWrap">
-        <svg id="graph" viewBox="0 0 1000 640" role="img" aria-label="Graf jaringan jalan menuju Gedung Fasilkom">
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M40 0H0V40" fill="none" stroke="#e8eef7" stroke-width="1"/>
-            </pattern>
-          </defs>
-          <rect x="0" y="0" width="1000" height="640" fill="url(#grid)"/>
-          <rect x="440" y="92" width="524" height="486" rx="26" fill="rgba(79,70,229,.045)" stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="8 7"/>
-          <text x="702" y="558" class="area-label" text-anchor="middle">AREA DALAM KAMPUS UNEJ</text>
-          <g id="layerEdges"></g>
-          <g id="layerNodes"></g>
+<main>
+  <div class="grid">
+    <section class="card">
+      <div class="card-head"><h2>Peta Graf Jalan</h2><span id="stepIndicator">— belum dijalankan —</span></div>
+      <div class="graph">
+        <svg id="graph" viewBox="0 0 1000 640" role="img" aria-label="Graf jaringan jalan menuju Fasilkom">
+          <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="#e8eef7"/></pattern></defs>
+          <rect width="1000" height="640" fill="url(#grid)"/>
+          <rect x="440" y="92" width="524" height="486" rx="26" class="campus"/>
+          <text x="702" y="558" class="area-label" text-anchor="middle">AREA DALAM KAMPUS</text>
+          <g id="layerEdges"></g><g id="layerNodes"></g>
         </svg>
-        <div class="tooltip" id="tooltip"></div>
       </div>
-
       <div class="legend">
         <span class="l-kos"><i></i>Kos / titik awal</span>
         <span class="l-goal"><i></i>Gedung Fasilkom (tujuan)</span>
@@ -53,7 +34,7 @@
         <span class="l-fr"><i></i>Ada di frontier / antrean</span>
         <span class="l-path"><i></i>Rute akhir</span>
       </div>
-    </div>
+    </section>
 
     <aside class="side">
       <!-- Kontrol -->
@@ -117,82 +98,41 @@
         </div>
       </div>
     </aside>
-  </section>
+  </div>
 
-  <!-- ============ HASIL PERBANDINGAN ============ -->
-  <section style="margin-top:18px">
-    <div class="card-head" style="padding:0 4px">
-      <div class="card-title">Panel Perbandingan &amp; Metrik Evaluasi</div>
-      <div class="hint">A* memakai bobot + heuristik · BFS menganggap semua ruas sama panjang</div>
+  <h2 class="section-title">Perbandingan Hasil</h2>
+  <div class="results">
+    <article class="res astar idle" id="resAstar">
+      <h3><i></i>A* (A-Star)<span id="tagAstar" class="tag">Menunggu</span></h3>
+      <div id="routeAstar" class="route"><span class="hint">Rute belum dihitung.</span></div>
+      <div class="metrics">
+        <div><small>Total jarak</small><b id="distAstar">– <small>m</small></b></div>
+        <div><small>Node dievaluasi</small><b id="evalAstar">–</b></div>
+      </div>
+      <div id="orderAstar" class="order"></div>
+    </article>
+    <article class="res bfs idle" id="resBfs">
+      <h3><i></i>BFS (Breadth-First)<span id="tagBfs" class="tag">Menunggu</span></h3>
+      <div id="routeBfs" class="route"><span class="hint">Rute belum dihitung.</span></div>
+      <div class="metrics">
+        <div><small>Total jarak</small><b id="distBfs">– <small>m</small></b></div>
+        <div><small>Node dievaluasi</small><b id="evalBfs">–</b></div>
+      </div>
+      <div id="orderBfs" class="order"></div>
+    </article>
+  </div>
+
+  <div class="summary idle" id="summary">
+    <div class="ico">💡</div>
+    <div>
+      <h4>Ringkasan Perbandingan</h4>
+      <p id="summaryText">Jalankan simulasi untuk melihat perbandingan jarak tempuh dan jumlah node yang dievaluasi antara A* dan BFS.</p>
     </div>
+  </div>
 
-    <div class="results-grid">
-      <div class="res-card astar idle" id="resAstar">
-        <div class="res-title"><span class="dot"></span>A* (A-Star)<span class="tag" id="tagAstar">Menunggu</span></div>
-        <div class="res-route" id="routeAstar"><span class="hint">Rute belum dihitung.</span></div>
-        <div class="res-metrics">
-          <div class="metric"><div class="k">Total Jarak</div><div class="v" id="distAstar">– <small>m</small></div></div>
-          <div class="metric"><div class="k">Node Dievaluasi</div><div class="v" id="evalAstar">–</div></div>
-        </div>
-        <div class="res-order" id="orderAstar" style="display:none"></div>
-        <div class="show-hint">↳ Klik kartu ini untuk menampilkan rutenya di graf</div>
-        <div class="res-note">Rute optimal karena heuristik <b>admissible</b> (h(n) ≤ jarak terpendek sesungguhnya), sehingga A* tidak pernah melewatkan jalur terbaik.</div>
-      </div>
-
-      <div class="res-card bfs idle" id="resBfs">
-        <div class="res-title"><span class="dot"></span>BFS (Breadth-First Search)<span class="tag" id="tagBfs">Menunggu</span></div>
-        <div class="res-route" id="routeBfs"><span class="hint">Rute belum dihitung.</span></div>
-        <div class="res-metrics">
-          <div class="metric"><div class="k">Total Jarak</div><div class="v" id="distBfs">– <small>m</small></div></div>
-          <div class="metric"><div class="k">Node Dievaluasi</div><div class="v" id="evalBfs">–</div></div>
-        </div>
-        <div class="res-order" id="orderBfs" style="display:none"></div>
-        <div class="show-hint">↳ Klik kartu ini untuk menampilkan rutenya di graf</div>
-        <div class="res-note">BFS menjamin rute dengan <b>jumlah ruas paling sedikit</b> (hop minimum), bukan jarak meter terkecil — bobot g(n) tidak dipertimbangkan.</div>
-      </div>
-    </div>
-
-    <div class="summary idle" id="summary">
-      <div class="ico">💡</div>
-      <div>
-        <h4>Ringkasan Perbandingan</h4>
-        <p id="summaryText">Jalankan simulasi untuk melihat perbandingan jarak tempuh dan jumlah node yang dievaluasi antara A* dan BFS.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ LOG + TABEL REFERENSI ============ -->
-  <section class="layout-2">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">Log Iterasi
-          <span id="logSubtitle">Rekam jejak langkah &amp; perhitungan f(n) = g(n) + h(n)</span>
-        </div>
-        <div class="hint" id="logCounter"></div>
-      </div>
-      <div class="log-box" id="logBox"><div class="ln log-empty">Belum ada langkah. Tekan <b>Jalankan</b> atau <b>Langkah</b>.</div></div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">Referensi Heuristik h(n)
-          <span>Nilai estimasi garis lurus tiap node menuju Gedung Fasilkom</span>
-        </div>
-      </div>
-      <div class="ref-scroll">
-        <table class="ref-table">
-          <thead>
-            <tr><th>#</th><th>Node</th><th style="text-align:right">h(n) m</th><th style="text-align:right">Jarak terpendek</th><th>Admissible?</th></tr>
-          </thead>
-          <tbody id="heurBody"></tbody>
-        </table>
-      </div>
-      <div class="note">
-        Kolom <b>jarak terpendek</b> dihitung dengan Dijkstra sebagai acuan kebenaran. Karena
-        <span class="mono">h(n) ≤ d(n, tujuan)</span> untuk semua node, heuristik bersifat
-        <b>admissible</b> sehingga A* tetap menghasilkan rute optimal.
-      </div>
-    </div>
+  <section class="card log-card">
+    <div class="head"><h2>Log Iterasi</h2><span id="logCounter"></span></div>
+    <div id="logBox" class="log"><div class="ln log-empty">Belum ada langkah. Tekan Jalankan atau Langkah.</div></div>
   </section>
 
   <section class="card" style="margin-top:18px">
@@ -211,14 +151,7 @@
       </table>
     </div>
   </section>
-
-  <footer>
-    <b>Arsitektur:</b> algoritma A*, BFS &amp; Dijkstra berjalan di <b>backend Python (Flask)</b>;
-    data graf dibaca dari <span class="mono">data/graph.json</span>, lalu ditampilkan oleh HTML + CSS + JavaScript.<br>
-    <b>Alur demo:</b> pilih titik awal → pilih <kbd>Bandingkan</kbd> → <kbd>Jalankan</kbd>, atau gunakan <kbd>Langkah</kbd> untuk menjelaskan tiap iterasi secara manual.
-  </footer>
 </main>
-
 <script src="{{ url_for('static', filename='js/api.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
