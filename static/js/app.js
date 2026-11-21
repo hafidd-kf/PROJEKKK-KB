@@ -2,10 +2,10 @@
 const $= (s,r=document)=>r.querySelector(s);
 const $$= (s,r=document)=>[...r.querySelectorAll(s)];
 const NS='http://www.w3.org/2000/svg';
-const DELAY=[1600,1100,700,420,220];
+const DELAY=700; // kecepatan animasi normal
 
 const S={
-  algo:'astar',start:null,goal:null,cache:{},loading:false,speed:2,
+  algo:'astar',start:null,goal:null,cache:{},loading:false,
   queue:[],active:null,frames:[],i:0,timer:null,playing:false,results:{},pkg:null
 };
 let nodeEls={},edgeEls={};
@@ -198,7 +198,7 @@ function tick(){
     if(!S.playing)return;
     if(!step()){stop();$('#stepIndicator').textContent='✔ simulasi selesai';return;}
     tick();
-  },DELAY[S.speed]);
+  },DELAY);
 }
 async function run(){
   if(S.playing){stop();return;}
@@ -235,9 +235,6 @@ function bind(){
     $$('#graph .node').forEach(el=>el.classList.toggle('is-goal',el.dataset.node===S.goal));
     reset();
   });
-  $('#speed').addEventListener('input',e=>{
-    S.speed=+e.target.value-1;$('#speedVal').textContent=DELAY[S.speed]+' ms';
-  });
   $('#btnRun').addEventListener('click',run);
   $('#btnStep').addEventListener('click',stepRun);
   $('#btnReset').addEventListener('click',reset);
@@ -249,7 +246,6 @@ async function init(){
   $('#startSel').innerHTML=opts(KOS_NODES)+opts(NODE_LIST.filter(n=>!KOS_NODES.includes(n.id)).map(n=>n.id));
   $('#goalSel').innerHTML=opts(NODE_LIST.map(n=>n.id));
   $('#startSel').value=S.start;$('#goalSel').value=S.goal;
-  $('#speedVal').textContent=DELAY[S.speed]+' ms';
   buildGraph();fillEdges();bind();renderSummary();renderLog(null);show(null,null);
 }
 init().catch(e=>{console.error(e);$('#stepIndicator').textContent='⚠ '+e.message;});
